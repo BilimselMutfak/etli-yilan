@@ -100,10 +100,10 @@
             text-align: center;
         }
 
-        #startOverlay h2, #continueOverlay h2 {
-            margin: 0 0 14px;
-            color: #d35400;
-        }
+            #startOverlay h2, #continueOverlay h2 {
+                margin: 0 0 14px;
+                color: #d35400;
+            }
 
         #levels {
             display: flex;
@@ -119,11 +119,11 @@
             font-size: 16px;
         }
 
-        .levelBtn span {
-            display: block;
-            font-size: 12px;
-            opacity: .9;
-        }
+            .levelBtn span {
+                display: block;
+                font-size: 12px;
+                opacity: .9;
+            }
 
         #continueOverlay {
             display: none;
@@ -188,142 +188,148 @@
         function vibrate() { if (navigator.vibrate) navigator.vibrate(30); }
 
         function meatIcon(type) {
-            const c = document.createElement('canvas'); c.width=64; c.height=64;
-            const g = c.getContext('2d'); g.translate(32,32);
-            if(type==='BONFİLE'){g.fillStyle='#c0392b'; g.beginPath(); g.ellipse(0,0,26,14,0,0,Math.PI*2); g.fill();}
-            if(type==='ANTRİKOT'){g.fillStyle='#a93226'; g.beginPath(); g.arc(0,0,22,0,Math.PI*2); g.fill(); g.strokeStyle='#fad7a0'; g.lineWidth=4; g.beginPath(); g.arc(0,0,12,0,Math.PI*2); g.stroke();}
-            if(type==='BUT'){g.fillStyle='#d35400'; g.beginPath(); g.moveTo(-10,-20); g.quadraticCurveTo(22,0,-6,22); g.closePath(); g.fill();}
-            if(type==='KABURGA'){g.fillStyle='#922b21'; g.fillRect(-22,-10,44,20); g.strokeStyle='#fdfefe'; g.lineWidth=3; for(let i=-14;i<=14;i+=14){g.beginPath(); g.moveTo(i,-12); g.lineTo(i,12); g.stroke();}}
-            if(type==='İNCİK'){g.fillStyle='#b03a2e'; g.beginPath(); g.ellipse(0,6,14,18,0,0,Math.PI*2); g.fill();}
-            if(type==='KANAT'){g.fillStyle='#e67e22'; g.beginPath(); g.moveTo(-22,0); g.quadraticCurveTo(0,-18,22,0); g.quadraticCurveTo(0,10,-22,0); g.fill();}
-            const img=new Image(); img.src=c.toDataURL(); return img;
+            const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+            const g = c.getContext('2d'); g.translate(32, 32);
+            if (type === 'BONFİLE') { g.fillStyle = '#c0392b'; g.beginPath(); g.ellipse(0, 0, 26, 14, 0, 0, Math.PI * 2); g.fill(); }
+            if (type === 'ANTRİKOT') { g.fillStyle = '#a93226'; g.beginPath(); g.arc(0, 0, 22, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#fad7a0'; g.lineWidth = 4; g.beginPath(); g.arc(0, 0, 12, 0, Math.PI * 2); g.stroke(); }
+            if (type === 'BUT') { g.fillStyle = '#d35400'; g.beginPath(); g.moveTo(-10, -20); g.quadraticCurveTo(22, 0, -6, 22); g.closePath(); g.fill(); }
+            if (type === 'KABURGA') { g.fillStyle = '#922b21'; g.fillRect(-22, -10, 44, 20); g.strokeStyle = '#fdfefe'; g.lineWidth = 3; for (let i = -14; i <= 14; i += 14) { g.beginPath(); g.moveTo(i, -12); g.lineTo(i, 12); g.stroke(); } }
+            if (type === 'İNCİK') { g.fillStyle = '#b03a2e'; g.beginPath(); g.ellipse(0, 6, 14, 18, 0, 0, Math.PI * 2); g.fill(); }
+            if (type === 'KANAT') { g.fillStyle = '#e67e22'; g.beginPath(); g.moveTo(-22, 0); g.quadraticCurveTo(0, -18, 22, 0); g.quadraticCurveTo(0, 10, -22, 0); g.fill(); }
+            const img = new Image(); img.src = c.toDataURL(); return img;
         }
 
         const meats = [
-            {name:'BONFİLE', img:meatIcon('BONFİLE')},
-            {name:'ANTRİKOT', img:meatIcon('ANTRİKOT')},
-            {name:'BUT', img:meatIcon('BUT')},
-            {name:'KABURGA', img:meatIcon('KABURGA')},
-            {name:'İNCİK', img:meatIcon('İNCİK')},
-            {name:'KANAT', img:meatIcon('KANAT')}
+            { name: 'BONFİLE', img: meatIcon('BONFİLE') },
+            { name: 'ANTRİKOT', img: meatIcon('ANTRİKOT') },
+            { name: 'BUT', img: meatIcon('BUT') },
+            { name: 'KABURGA', img: meatIcon('KABURGA') },
+            { name: 'İNCİK', img: meatIcon('İNCİK') },
+            { name: 'KANAT', img: meatIcon('KANAT') }
         ];
 
-        function spawnFood(){ const m=meats[Math.floor(Math.random()*meats.length)]; food={x:Math.floor(Math.random()*cols),y:Math.floor(Math.random()*rows),meat:m};}
+        function spawnFood() { const m = meats[Math.floor(Math.random() * meats.length)]; food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows), meat: m }; }
 
-        function init(){ snake=[{x:6,y:10}]; dir='RIGHT'; score=0; lives=3; waiting=false; gameOver=false; spawnFood(); updateUI(); clearInterval(timer); timer=setInterval(loop,speed);}
+        function init() { snake = [{ x: 6, y: 10 }]; dir = 'RIGHT'; score = 0; lives = 3; waiting = false; gameOver = false; spawnFood(); updateUI(); clearInterval(timer); timer = setInterval(loop, speed); }
 
-        function startGame(selSpeed){ speed=selSpeed; started=true; document.getElementById('startOverlay').style.display='none'; init(); }
+        function startGame(selSpeed) { speed = selSpeed; started = true; document.getElementById('startOverlay').style.display = 'none'; init(); }
 
-        function updateUI(){ scoreEl.textContent=score; livesEl.textContent=lives; }
-        function message(t){ msgEl.textContent=t; setTimeout(()=>msgEl.textContent='',2500); }
+        function updateUI() { scoreEl.textContent = score; livesEl.textContent = lives; }
+        function message(t) { msgEl.textContent = t; setTimeout(() => msgEl.textContent = '', 2500); }
 
-        function loop(){ if(started && !waiting && !gameOver) step(); draw(); }
+        function loop() { if (started && !waiting && !gameOver) step(); draw(); }
 
-        function step(){
-            const h={...snake[0]};
-            if(dir==='LEFT') h.x--; if(dir==='RIGHT') h.x++; if(dir==='UP') h.y--; if(dir==='DOWN') h.y++;
+        function step() {
+            const h = { ...snake[0] };
+            if (dir === 'LEFT') h.x--; if (dir === 'RIGHT') h.x++; if (dir === 'UP') h.y--; if (dir === 'DOWN') h.y++;
 
             // çarpma kontrolü
-            if(h.x<0 || h.y<0 || h.x>=cols || h.y>=rows || snake.some(p=>p.x===h.x && p.y===h.y)){
-                lives--; updateUI(); 
-                if(lives>0){ waiting=true; continueOverlay.style.display='block'; }
-                else{ gameOver=true; }
+            if (h.x < 0 || h.y < 0 || h.x >= cols || h.y >= rows || snake.some(p => p.x === h.x && p.y === h.y)) {
+                lives--; updateUI();
+                if (lives > 0) { waiting = true; continueOverlay.style.display = 'block'; }
+                else { gameOver = true; }
                 return;
             }
 
             // yiyecek
-            if(h.x===food.x && h.y===food.y){ score+=10; updateUI(); message('Et de lezzetliymiş! ('+food.meat.name+')'); vibrate(); spawnFood(); }
+            if (h.x === food.x && h.y === food.y) { score += 10; updateUI(); message('Et de lezzetliymiş! (' + food.meat.name + ')'); vibrate(); spawnFood(); }
             else snake.pop();
             snake.unshift(h);
         }
 
-        function draw(){
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            snake.forEach((p,i)=>{ctx.fillStyle=i?'#f39c12':'#e67e22'; ctx.fillRect(p.x*box,p.y*box,box,box);});
-            if(food) ctx.drawImage(food.meat.img,food.x*box,food.y*box,box,box);
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            snake.forEach((p, i) => { ctx.fillStyle = i ? '#f39c12' : '#e67e22'; ctx.fillRect(p.x * box, p.y * box, box, box); });
+            if (food) ctx.drawImage(food.meat.img, food.x * box, food.y * box, box, box);
 
-            if(gameOver){
-                ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-                ctx.fillStyle='#fff'; ctx.font='20px Arial'; ctx.textAlign='center';
-                ctx.fillText('BilimselMutfak YouTube',canvas.width/2,canvas.height/2-10);
-                ctx.fillStyle='#f39c12';
-                ctx.font='14px Arial';
-                ctx.fillText('→ Kanalı Ziyaret Et ←',canvas.width/2,canvas.height/2+20);
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff'; ctx.font = '20px Arial'; ctx.textAlign = 'center';
+                ctx.fillText('BilimselMutfak YouTube', canvas.width / 2, canvas.height / 2 - 10);
+                ctx.fillStyle = '#f39c12';
+                ctx.font = '14px Arial';
+                ctx.fillText('→ Kanalı Ziyaret Et ←', canvas.width / 2, canvas.height / 2 + 20);
             }
         }
 
         // Devam etme fonksiyonu
         function continueGame() {
-            if(waiting && !gameOver){
-                waiting=false;
-                continueOverlay.style.display='none';
+            if (waiting && !gameOver) {
+                waiting = false;
+                continueOverlay.style.display = 'none';
+
+                // Yılanın baş pozisyonunu ve yönünü sıfırla
+                snake = [{ x: 6, y: 10 }];
+                dir = 'RIGHT';
+
+                // Yeni yiyecek oluştur
                 spawnFood();
             }
         }
 
         // Klavye
-        window.addEventListener('keydown', e=>{
-            if((e.key==='Enter' || e.key===' ') && waiting){ continueGame(); }
-            if(e.key==='ArrowLeft' && dir!=='RIGHT') dir='LEFT';
-            if(e.key==='ArrowRight' && dir!=='LEFT') dir='RIGHT';
-            if(e.key==='ArrowUp' && dir!=='DOWN') dir='UP';
-            if(e.key==='ArrowDown' && dir!=='UP') dir='DOWN';
+        window.addEventListener('keydown', e => {
+            if ((e.key === 'Enter' || e.key === ' ') && waiting) { continueGame(); }
+            if (e.key === 'ArrowLeft' && dir !== 'RIGHT') dir = 'LEFT';
+            if (e.key === 'ArrowRight' && dir !== 'LEFT') dir = 'RIGHT';
+            if (e.key === 'ArrowUp' && dir !== 'DOWN') dir = 'UP';
+            if (e.key === 'ArrowDown' && dir !== 'UP') dir = 'DOWN';
         });
 
         // Mobil butonlar
-        document.querySelectorAll('.btn').forEach(b=>b.addEventListener('touchstart', ()=>{
-            const d=b.dataset.dir;
-            if(d==='LEFT' && dir!=='RIGHT') dir='LEFT';
-            if(d==='RIGHT' && dir!=='LEFT') dir='RIGHT';
-            if(d==='UP' && dir!=='DOWN') dir='UP';
-            if(d==='DOWN' && dir!=='UP') dir='DOWN';
+        document.querySelectorAll('.btn').forEach(b => b.addEventListener('touchstart', () => {
+            const d = b.dataset.dir;
+            if (d === 'LEFT' && dir !== 'RIGHT') dir = 'LEFT';
+            if (d === 'RIGHT' && dir !== 'LEFT') dir = 'RIGHT';
+            if (d === 'UP' && dir !== 'DOWN') dir = 'UP';
+            if (d === 'DOWN' && dir !== 'UP') dir = 'DOWN';
         }));
 
         // Canvas dokunmatik
-        canvas.addEventListener('touchstart', function(e){
+        canvas.addEventListener('touchstart', function (e) {
             e.preventDefault();
-            const touch=e.touches[0];
-            const rect=canvas.getBoundingClientRect();
-            const x=touch.clientX-rect.left;
-            const y=touch.clientY-rect.top;
-            const centerX=canvas.width/2;
-            const centerY=canvas.height/2;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
 
             // Can kaybından devam
             continueGame();
 
             // Yön kontrolü
-            if(!waiting && !gameOver){
-                if(x>centerX && Math.abs(x-centerX)>Math.abs(y-centerY) && dir!=='LEFT') dir='RIGHT';
-                else if(x<centerX && Math.abs(x-centerX)>Math.abs(y-centerY) && dir!=='RIGHT') dir='LEFT';
-                else if(y>centerY && Math.abs(y-centerY)>Math.abs(x-centerX) && dir!=='UP') dir='DOWN';
-                else if(y<centerY && Math.abs(y-centerY)>Math.abs(x-centerX) && dir!=='DOWN') dir='UP';
+            if (!waiting && !gameOver) {
+                if (x > centerX && Math.abs(x - centerX) > Math.abs(y - centerY) && dir !== 'LEFT') dir = 'RIGHT';
+                else if (x < centerX && Math.abs(x - centerX) > Math.abs(y - centerY) && dir !== 'RIGHT') dir = 'LEFT';
+                else if (y > centerY && Math.abs(y - centerY) > Math.abs(x - centerX) && dir !== 'UP') dir = 'DOWN';
+                else if (y < centerY && Math.abs(y - centerY) > Math.abs(x - centerX) && dir !== 'DOWN') dir = 'UP';
             }
-        }, {passive:false});
+        }, { passive: false });
 
         // Overlay tıklama ile devam
         continueOverlay.addEventListener('click', continueGame);
         continueOverlay.addEventListener('touchstart', continueGame);
 
         // Canvas tıklaması ile kanal linki açma
-        canvas.addEventListener('click', function(e){
-            if(gameOver){
-                const rect=canvas.getBoundingClientRect();
-                const clickX=e.clientX-rect.left;
-                const clickY=e.clientY-rect.top;
-                if(clickX>canvas.width/2-80 && clickX<canvas.width/2+80 && clickY>canvas.height/2-20 && clickY<canvas.height/2+20){
-                    window.open('https://www.youtube.com/@BilimselMutfak','_blank');
+        canvas.addEventListener('click', function (e) {
+            if (gameOver) {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                if (clickX > canvas.width / 2 - 80 && clickX < canvas.width / 2 + 80 && clickY > canvas.height / 2 - 20 && clickY < canvas.height / 2 + 20) {
+                    window.open('https://www.youtube.com/@BilimselMutfak', '_blank');
                 }
             }
         });
 
         // Zorluk
-        document.querySelectorAll('.levelBtn').forEach(b=>b.onclick=()=>startGame(parseInt(b.dataset.speed)));
+        document.querySelectorAll('.levelBtn').forEach(b => b.onclick = () => startGame(parseInt(b.dataset.speed)));
 
-        document.getElementById('restart').onclick=()=>location.reload();
-        document.getElementById('share').onclick=()=>{
-            const url=location.href;
-            if(navigator.share) navigator.share({title:'BilimselMutfak Etli Yılan', text:'Et toplayarak büyüyen eğlenceli oyun!', url});
+        document.getElementById('restart').onclick = () => location.reload();
+        document.getElementById('share').onclick = () => {
+            const url = location.href;
+            if (navigator.share) navigator.share({ title: 'BilimselMutfak Etli Yılan', text: 'Et toplayarak büyüyen eğlenceli oyun!', url });
             else { navigator.clipboard.writeText(url); alert('Link kopyalandı'); }
         };
 
