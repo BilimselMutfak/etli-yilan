@@ -246,6 +246,7 @@
             if (e.key === 'ArrowDown' && dir !== 'UP') dir = 'DOWN';
         });
 
+        // Mevcut mobil buton kontrolleri
         document.querySelectorAll('.btn').forEach(b => b.addEventListener('touchstart', () => {
             const d = b.dataset.dir;
             if (d === 'LEFT' && dir !== 'RIGHT') dir = 'LEFT';
@@ -253,6 +254,28 @@
             if (d === 'UP' && dir !== 'DOWN') dir = 'UP';
             if (d === 'DOWN' && dir !== 'UP') dir = 'DOWN';
         }));
+
+        // Canvas dokunma ile yön kontrolü (telefon ekranı için)
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            if (x > centerX && Math.abs(x - centerX) > Math.abs(y - centerY)) {
+                if (dir !== 'LEFT') dir = 'RIGHT';
+            } else if (x < centerX && Math.abs(x - centerX) > Math.abs(y - centerY)) {
+                if (dir !== 'RIGHT') dir = 'LEFT';
+            } else if (y > centerY && Math.abs(y - centerY) > Math.abs(x - centerX)) {
+                if (dir !== 'UP') dir = 'DOWN';
+            } else if (y < centerY && Math.abs(y - centerY) > Math.abs(x - centerX)) {
+                if (dir !== 'DOWN') dir = 'UP';
+            }
+        }, {passive: false});
 
         document.querySelectorAll('.levelBtn').forEach(b => {
             b.onclick = () => startGame(parseInt(b.dataset.speed));
