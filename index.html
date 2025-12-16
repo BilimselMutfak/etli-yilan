@@ -129,6 +129,7 @@
             display: none;
             font-size: 18px;
             color: #d35400;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -151,7 +152,7 @@
 
         <!-- Can kaybı sonrası devam overlay -->
         <div id="continueOverlay">
-            Can kaybettin! Devam etmek için dokun.
+            CAN KAYBETTİN! DEVAM ETMEK İÇİN DOKUN
         </div>
     </div>
 
@@ -245,17 +246,24 @@
                 ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,canvas.width,canvas.height);
                 ctx.fillStyle='#fff'; ctx.font='20px Arial'; ctx.textAlign='center';
                 ctx.fillText('BilimselMutfak YouTube',canvas.width/2,canvas.height/2-10);
-
-                // Tıklanabilir link
                 ctx.fillStyle='#f39c12';
                 ctx.font='14px Arial';
                 ctx.fillText('→ Kanalı Ziyaret Et ←',canvas.width/2,canvas.height/2+20);
             }
         }
 
+        // Devam etme fonksiyonu
+        function continueGame() {
+            if(waiting && !gameOver){
+                waiting=false;
+                continueOverlay.style.display='none';
+                spawnFood();
+            }
+        }
+
         // Klavye
         window.addEventListener('keydown', e=>{
-            if(e.key==='Enter' && waiting && !gameOver){ waiting=false; continueOverlay.style.display='none'; spawnFood(); }
+            if((e.key==='Enter' || e.key===' ') && waiting){ continueGame(); }
             if(e.key==='ArrowLeft' && dir!=='RIGHT') dir='LEFT';
             if(e.key==='ArrowRight' && dir!=='LEFT') dir='RIGHT';
             if(e.key==='ArrowUp' && dir!=='DOWN') dir='UP';
@@ -282,14 +290,20 @@
             const centerY=canvas.height/2;
 
             // Can kaybından devam
-            if(waiting && !gameOver){ waiting=false; continueOverlay.style.display='none'; spawnFood(); return; }
+            continueGame();
 
             // Yön kontrolü
-            if(x>centerX && Math.abs(x-centerX)>Math.abs(y-centerY) && dir!=='LEFT') dir='RIGHT';
-            else if(x<centerX && Math.abs(x-centerX)>Math.abs(y-centerY) && dir!=='RIGHT') dir='LEFT';
-            else if(y>centerY && Math.abs(y-centerY)>Math.abs(x-centerX) && dir!=='UP') dir='DOWN';
-            else if(y<centerY && Math.abs(y-centerY)>Math.abs(x-centerX) && dir!=='DOWN') dir='UP';
+            if(!waiting && !gameOver){
+                if(x>centerX && Math.abs(x-centerX)>Math.abs(y-centerY) && dir!=='LEFT') dir='RIGHT';
+                else if(x<centerX && Math.abs(x-centerX)>Math.abs(y-centerY) && dir!=='RIGHT') dir='LEFT';
+                else if(y>centerY && Math.abs(y-centerY)>Math.abs(x-centerX) && dir!=='UP') dir='DOWN';
+                else if(y<centerY && Math.abs(y-centerY)>Math.abs(x-centerX) && dir!=='DOWN') dir='UP';
+            }
         }, {passive:false});
+
+        // Overlay tıklama ile devam
+        continueOverlay.addEventListener('click', continueGame);
+        continueOverlay.addEventListener('touchstart', continueGame);
 
         // Canvas tıklaması ile kanal linki açma
         canvas.addEventListener('click', function(e){
@@ -297,8 +311,6 @@
                 const rect=canvas.getBoundingClientRect();
                 const clickX=e.clientX-rect.left;
                 const clickY=e.clientY-rect.top;
-
-                // Yazının olduğu yaklaşık alan
                 if(clickX>canvas.width/2-80 && clickX<canvas.width/2+80 && clickY>canvas.height/2-20 && clickY<canvas.height/2+20){
                     window.open('https://www.youtube.com/@BilimselMutfak','_blank');
                 }
