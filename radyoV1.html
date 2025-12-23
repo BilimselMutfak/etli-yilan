@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>BilimselMutfak RadyoV3</title>
+    <title>BilimselMutfak RadyoV4</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * {
@@ -69,11 +69,11 @@
 
         @keyframes scroll-left {
             0% {
-                transform: translateX(100%)
+                transform: translateX(100%);
             }
 
             100% {
-                transform: translateX(-100%)
+                transform: translateX(-100%);
             }
         }
 
@@ -149,17 +149,60 @@
             z-index: 10;
             flex-direction: column;
             gap: 12px;
+            padding: 20px;
         }
 
+            #gameOverlay .score-display {
+                font-size: 20px;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-bottom: 12px;
+            }
+
+                #gameOverlay .score-display::before {
+                    content: "🏆";
+                    font-size: 22px;
+                }
+
             #gameOverlay button {
+                flex: 1;
+                max-width: 220px;
                 background: #1e88e5;
                 color: #fff;
                 border: none;
-                border-radius: 16px;
-                padding: 16px 28px;
-                font-size: 18px;
+                border-radius: 12px;
+                padding: 14px;
+                font-size: 16px;
                 cursor: pointer;
+                transition: all 0.3s ease;
             }
+
+                #gameOverlay button:hover {
+                    background: #1565c0;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                }
+
+            #gameOverlay .social-icons {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                max-width: 220px;
+                margin-top: 12px;
+            }
+
+                #gameOverlay .social-icons img {
+                    width: 32px;
+                    height: 32px;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                }
+
+                    #gameOverlay .social-icons img:hover {
+                        transform: scale(1.1);
+                    }
 
         .controls {
             background: #0a2540;
@@ -306,7 +349,7 @@
 </head>
 <body>
     <div class="app">
-        <header>🎧 BilimselMutfak ROV3</header>
+        <header>🎧 BilimselMutfak ROV4</header>
         <div class="mode-bar">
             <div class="mode-btn" onclick="showGame()"><span>🎮</span>Oyun</div>
             <div class="mode-btn" onclick="openYT()"><span>▶️</span>YT</div>
@@ -336,8 +379,13 @@
                     </div>
                     <canvas id="gameCanvas"></canvas>
                     <div id="gameOverlay">
+                        <div class="score-display" id="finalScore">Skor: 0</div>
                         <button onclick="restartGame()">🔄 Tekrar Oyna</button>
                         <button onclick="shareLink()">📤 Arkadaşına Gönder</button>
+                        <div class="social-icons">
+                            <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" onclick="openYT()">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" onclick="openIG()">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -351,12 +399,10 @@
                     <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)">
                 </div>
             </div>
-
             <div class="function-panel" id="functionPanel">
                 <button class="function-btn" onclick="sendCurrentRadio()">Gönder</button>
                 <button class="function-btn">2. Fonksiyon</button>
             </div>
-
             <div class="game-controls" id="gameControls">
                 <div class="dir-grid">
                     <button class="dir-btn center" onpointerdown="setDir(0,-1)">⬆️</button>
@@ -381,7 +427,6 @@
             const startOverlay = document.getElementById("startOverlay");
             let audioCtx, analyser, source, data, currentRadioBtn = null;
 
-            // Ses ekolayzırı ve iOS uyumu
             function initAudio() {
                 if (audioCtx) return;
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -407,7 +452,6 @@
                 }
             }
 
-            // Radyo seçimi ve çalma
             function selectRadio(btn, name, url) {
                 document.querySelectorAll(".radio-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
@@ -418,7 +462,6 @@
                 status.textContent = name + " • YAYINDA";
             }
 
-            // Play/Pause ve ikon güncelleme
             function togglePlay() {
                 if (radio.volume == 0) { radio.volume = 0.5; vol.value = 0.5; }
                 if (radio.paused) { audioCtx.resume().then(() => radio.play().then(updateIcon)); }
@@ -431,7 +474,6 @@
                 else playBtn.textContent = "⏸️";
             }
 
-            // Başlatmak için dokun overlay
             startOverlay.addEventListener("click", () => {
                 startOverlay.classList.add("hidden");
                 const firstBtn = document.querySelector("#radioArea .radio-btn");
@@ -441,7 +483,6 @@
                 }
             });
 
-            // Oyun ve fonksiyonlar
             const radioArea = document.getElementById("radioArea");
             const gameArea = document.getElementById("gameArea");
             const functionPanel = document.getElementById("functionPanel");
@@ -451,23 +492,64 @@
             const scoreEl = document.getElementById("score");
             const livesEl = document.getElementById("lives");
             const overlay = document.getElementById("gameOverlay");
+            const finalScore = document.getElementById("finalScore");
             const grid = 20;
             let snake, dir, food, score, lives, loop, paused = false;
+
             function setDir(x, y) { if ((x !== 0 && dir.x === 0) || (y !== 0 && dir.y === 0)) dir = { x, y }; }
             function resizeGame() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
             function showGame() { radioArea.style.display = "none"; gameArea.style.display = "flex"; functionPanel.style.display = "none"; gameControls.style.display = "flex"; resizeGame(); startGame(); }
             function showRadio() { gameArea.style.display = "none"; radioArea.style.display = "grid"; gameControls.style.display = "none"; functionPanel.style.display = "flex"; }
-            function startGame() { snake = [{ x: 5, y: 5 }]; dir = { x: 1, y: 0 }; food = randomPos(); score = 0; lives = 3; overlay.style.display = "none"; updateHud(); clearInterval(loop); loop = setInterval(updateGame, 180); }
+
+            function startGame() {
+                snake = [{ x: 5, y: 5 }]; dir = { x: 1, y: 0 }; food = randomPos();
+                score = 0; lives = 3; overlay.style.display = "none"; updateHud();
+                clearInterval(loop); loop = setInterval(updateGame, 180);
+            }
+
             function restartGame() { startGame(); }
+
             function randomPos() { return { x: Math.floor(Math.random() * (canvas.width / grid)), y: Math.floor(Math.random() * (canvas.height / grid)) }; }
+
             function updateHud() { scoreEl.textContent = "Skor: " + score; livesEl.textContent = "❤️".repeat(lives); }
-            function updateGame() { if (paused) return; const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y }; if (head.x < 0 || head.y < 0 || head.x >= canvas.width / grid || head.y >= canvas.height / grid) { lives--; updateHud(); if (lives <= 0) { clearInterval(loop); overlay.style.display = "flex"; return; } paused = true; setTimeout(() => { snake = [{ x: Math.floor(Math.random() * (canvas.width / grid)), y: Math.floor(Math.random() * (canvas.height / grid)) }]; paused = false; }, 2000); return; } snake.unshift(head); if (head.x === food.x && head.y === food.y) { score += 10; food = randomPos(); updateHud(); } else snake.pop(); drawGame(); }
-            function drawGame() { ctx.fillStyle = "#081626"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#e53935"; ctx.fillRect(food.x * grid, food.y * grid, grid, grid); ctx.fillStyle = "#1e88e5"; snake.forEach(s => ctx.fillRect(s.x * grid, s.y * grid, grid, grid)); }
-            window.addEventListener("keydown", e => { if (e.key === "ArrowUp") setDir(0, -1); if (e.key === "ArrowDown") setDir(0, 1); if (e.key === "ArrowLeft") setDir(-1, 0); if (e.key === "ArrowRight") setDir(1, 0); if (paused && (e.key === " " || e.key === "Enter")) paused = false; });
+
+            function updateGame() {
+                if (paused) return;
+                const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+                if (head.x < 0 || head.y < 0 || head.x >= canvas.width / grid || head.y >= canvas.height / grid) {
+                    lives--; updateHud();
+                    if (lives <= 0) { clearInterval(loop); finalScore.textContent = "Skor: " + score; overlay.style.display = "flex"; return; }
+                    paused = true;
+                    setTimeout(() => { snake = [{ x: Math.floor(Math.random() * canvas.width / grid), y: Math.floor(Math.random() * canvas.height / grid) }]; paused = false; }, 2000);
+                    return;
+                }
+                snake.unshift(head);
+                if (head.x === food.x && head.y === food.y) { score += 10; food = randomPos(); updateHud(); }
+                else snake.pop();
+                drawGame();
+            }
+
+            function drawGame() {
+                ctx.fillStyle = "#081626"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#e53935"; ctx.fillRect(food.x * grid, food.y * grid, grid, grid);
+                ctx.fillStyle = "#1e88e5"; snake.forEach(s => ctx.fillRect(s.x * grid, s.y * grid, grid, grid));
+            }
+
+            window.addEventListener("keydown", e => {
+                if (e.key === "ArrowUp") setDir(0, -1);
+                if (e.key === "ArrowDown") setDir(0, 1);
+                if (e.key === "ArrowLeft") setDir(-1, 0);
+                if (e.key === "ArrowRight") setDir(1, 0);
+                if (paused && (e.key === " " || e.key === "Enter")) paused = false;
+            });
+
             window.addEventListener("click", () => { if (paused) paused = false; });
+
             function shareLink() { window.prompt("Arkadaşınıza göndermek için linki kopyalayın:", window.location.href); }
+
             const openYT = () => window.open("https://www.youtube.com/@bilimselmutfak", "_blank");
             const openIG = () => window.open("https://www.instagram.com/bilimselmutfakyt/", "_blank");
+
             function sendCurrentRadio() {
                 if (!currentRadioBtn) { alert("Önce bir radyo seçin!"); return; }
                 let radioName = currentRadioBtn.textContent;
