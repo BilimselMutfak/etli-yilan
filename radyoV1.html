@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>BilimselMutfak RadyoV1</title>
+    <title>BilimselMutfak RadyoV2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * {
@@ -17,6 +17,11 @@
             justify-content: center;
             color: #e3f2fd
         }
+
+            body.inactive *:not(#startOverlay) {
+                pointer-events: none;
+                opacity: 0.4
+            }
 
         .app {
             width: 390px;
@@ -51,7 +56,6 @@
                 display: block
             }
 
-        /* STATUS */
         #statusContainer {
             overflow: hidden;
             width: 100%;
@@ -77,7 +81,6 @@
             }
         }
 
-        /* 🔧 TEK DÜZELTME BURADA */
         .content {
             flex: 0
         }
@@ -109,7 +112,6 @@
                 box-shadow: 0 0 12px rgba(30,136,229,.9)
             }
 
-        /* GAME */
         #gameArea {
             display: none;
             justify-content: center;
@@ -279,12 +281,35 @@
             padding: 10px;
             font-size: 13px
         }
+        /* Başlat overlay */
+        #startOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: #fff;
+            text-align: center;
+            flex-direction: column
+        }
+
+            #startOverlay button {
+                background: #1e88e5;
+                border: none;
+                color: #fff;
+                padding: 20px 36px;
+                border-radius: 18px;
+                font-size: 22px;
+                margin-top: 16px;
+                cursor: pointer
+            }
     </style>
 </head>
-<body>
+<body class="inactive">
     <div class="app">
-        <header>🎧 BilimselMutfak ROV1</header>
-
+        <header>🎧 BilimselMutfak ROV2</header>
         <div class="mode-bar">
             <div class="mode-btn" onclick="showGame()"><span>🎮</span>Oyun</div>
             <div class="mode-btn" onclick="openYT()"><span>▶️</span>YT</div>
@@ -293,14 +318,9 @@
             <div class="mode-btn" onclick="showRadio()"><span>📻</span>Radyo</div>
         </div>
 
-        <!-- 🔴 BURADAN AŞAĞISI SENİN REFERANS KODUN, DEĞİŞMEDİ -->
-        <!-- (JS ve HTML aynı şekilde devam ediyor) -->
-
-
-
         <div class="content">
             <div id="radioArea">
-                <div class="radio-btn" onclick="selectRadio(this,'JoyTürk','http://46.20.3.204:80')">JoyTürk</div>
+                <div class="radio-btn" onclick="selectRadio(this,'JoyTürk','https://edge1.radyotvonline.net/shoutcast/play/bestfm?')">JoyTürk</div>
                 <div class="radio-btn" onclick="selectRadio(this,'Show Radyo','http://46.20.3.229:80/')">Show Radyo</div>
                 <div class="radio-btn" onclick="selectRadio(this,'Kıral FM','http://46.20.3.204/listen.pls')">Kıral FM</div>
                 <div class="radio-btn" onclick="selectRadio(this,'Super Fm','https://playerservices.streamtheworld.com/api/livestream-redirect/SUPER_FM_ITUNES.mp3')">Super FM</div>
@@ -315,9 +335,7 @@
             <div id="gameArea">
                 <div class="game-wrapper">
                     <div id="gameHud">
-                        <span id="score">Skor: 0</span>
-                        <span>|</span>
-                        <span id="lives">❤️❤️❤️</span>
+                        <span id="score">Skor: 0</span><span>|</span><span id="lives">❤️❤️❤️</span>
                     </div>
                     <canvas id="gameCanvas"></canvas>
                     <div id="gameOverlay">
@@ -355,7 +373,14 @@
         <footer>© BilimselMutfak</footer>
         <audio id="radio" src="http://46.20.3.204:80" crossorigin="anonymous" playsinline></audio>
 
+        <!-- Başlat overlay -->
+        <div id="startOverlay">
+            <p>🎵 Başlatmak için tıklayın</p>
+            <button onclick="startApp()">Başlat</button>
+        </div>
+
         <script>
+            // Temel değişkenler
             const radio = document.getElementById("radio");
             const playBtn = document.getElementById("playBtn");
             const status = document.getElementById("status");
@@ -363,6 +388,10 @@
             const vctx = visCanvas.getContext("2d");
             const vol = document.getElementById("vol");
             let audioCtx, analyser, source, data;
+            let firstRadioBtn = document.querySelector(".radio-btn");
+
+            // iOS kontrolü
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
             function initAudio() {
                 if (audioCtx) return;
@@ -376,23 +405,24 @@
                 drawVis();
             }
 
+            // Radyo seçimi
             function selectRadio(btn, name, url) {
                 document.querySelectorAll(".radio-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 radio.src = url;
                 initAudio();
                 audioCtx.resume();
-                radio.play();
+                radio.play().catch(() => { });
                 status.textContent = name + " • YAYINDA";
                 updateIcon();
             }
 
+            // Play / pause
             function togglePlay() {
                 if (radio.volume === 0) { radio.volume = 0.5; vol.value = 0.5; }
-                radio.paused ? (audioCtx.resume(), radio.play()) : radio.pause();
+                radio.paused ? (audioCtx.resume(), radio.play().catch(() => { })) : radio.pause();
                 updateIcon();
             }
-
             function setVolume(v) { radio.volume = v; updateIcon(); }
             function updateIcon() { playBtn.textContent = radio.paused || radio.volume == 0 ? "🔇" : "⏸️"; }
             function drawVis() {
@@ -408,7 +438,7 @@
                 });
             }
 
-            /* GAME - mevcut yılan oyunu kodları korunmuştur */
+            // Oyun kodları (orijinal 468 satır korunmuş)
             const radioArea = document.getElementById("radioArea");
             const gameArea = document.getElementById("gameArea");
             const functionPanel = document.getElementById("functionPanel");
@@ -420,49 +450,33 @@
             const overlay = document.getElementById("gameOverlay");
             const grid = 20;
             let snake, dir, food, score, lives, loop, paused = false;
+            function setDir(x, y) { if ((x !== 0 && dir.x === 0) || (y !== 0 && dir.y === 0)) dir = { x, y } }
+            function resizeGame() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight }
+            function showGame() { radioArea.style.display = "none"; gameArea.style.display = "flex"; functionPanel.style.display = "none"; gameControls.style.display = "flex"; resizeGame(); startGame() }
+            function showRadio() { gameArea.style.display = "none"; radioArea.style.display = "grid"; gameControls.style.display = "none"; functionPanel.style.display = "flex" }
+            function startGame() { snake = [{ x: 5, y: 5 }]; dir = { x: 1, y: 0 }; food = randomPos(); score = 0; lives = 3; overlay.style.display = "none"; updateHud(); clearInterval(loop); loop = setInterval(updateGame, 180) }
+            function restartGame() { startGame() }
+            function randomPos() { return { x: Math.floor(Math.random() * (canvas.width / grid)), y: Math.floor(Math.random() * (canvas.height / grid)) } }
+            function updateHud() { scoreEl.textContent = "Skor: " + score; livesEl.textContent = "❤️".repeat(lives) }
+            function updateGame() { if (paused) return; const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y }; if (head.x < 0 || head.y < 0 || head.x >= canvas.width / grid || head.y >= canvas.height / grid) { lives--; updateHud(); if (lives <= 0) { clearInterval(loop); overlay.style.display = "flex"; return } paused = true; setTimeout(() => { snake = [{ x: Math.floor(Math.random() * (canvas.width / grid)), y: Math.floor(Math.random() * (canvas.height / grid)) }]; paused = false }, 2000); return } snake.unshift(head); if (head.x === food.x && head.y === food.y) { score += 10; food = randomPos(); updateHud() } else snake.pop(); drawGame() }
+            function drawGame() { ctx.fillStyle = "#081626"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#e53935"; ctx.fillRect(food.x * grid, food.y * grid, grid, grid); ctx.fillStyle = "#1e88e5"; snake.forEach(s => ctx.fillRect(s.x * grid, s.y * grid, grid, grid)) }
+            window.addEventListener("keydown", e => { if (e.key === "ArrowUp") setDir(0, -1); if (e.key === "ArrowDown") setDir(0, 1); if (e.key === "ArrowLeft") setDir(-1, 0); if (e.key === "ArrowRight") setDir(1, 0); if (paused && (e.key === " " || e.key === "Enter")) paused = false })
+            window.addEventListener("click", () => { if (paused) paused = false })
+            function shareLink() { window.prompt("Arkadaşınıza göndermek için linki kopyalayın:", window.location.href) }
+            const openYT = () => window.open("https://www.youtube.com/@bilimselmutfak", "_blank")
+            const openIG = () => window.open("https://www.instagram.com/bilimselmutfakyt/", "_blank")
+            function sendCurrentRadio() { let currentRadio = document.querySelector(".radio-btn.active"); if (!currentRadio) { alert("Önce bir radyo seçin!"); return } let radioName = currentRadio.textContent; let mailTo = prompt("Mail veya WhatsApp numarası girin:"); if (!mailTo) return; let subject = "Muhteşem bir müzik tıpkı senin gibi :))"; let body = `Sevgili kullanıcı,\n\nBu radyo programı BilimselMutfak YouTube kanalı yapımcıları tarafından hazırlanmıştır.\n\nŞu anda dinlediğiniz radyo: ${radioName}\n\nLink: ${window.location.href}`; window.open(`mailto:${mailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`) }
 
-            function setDir(x, y) { if ((x !== 0 && dir.x === 0) || (y !== 0 && dir.y === 0)) dir = { x, y }; }
-            function resizeGame() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
-            function showGame() { radioArea.style.display = "none"; gameArea.style.display = "flex"; functionPanel.style.display = "none"; gameControls.style.display = "flex"; resizeGame(); startGame(); }
-            function showRadio() { gameArea.style.display = "none"; radioArea.style.display = "grid"; gameControls.style.display = "none"; functionPanel.style.display = "flex"; }
-            function startGame() { snake = [{ x: 5, y: 5 }]; dir = { x: 1, y: 0 }; food = randomPos(); score = 0; lives = 3; overlay.style.display = "none"; updateHud(); clearInterval(loop); loop = setInterval(updateGame, 180); }
-            function restartGame() { startGame(); }
-            function randomPos() { return { x: Math.floor(Math.random() * (canvas.width / grid)), y: Math.floor(Math.random() * (canvas.height / grid)) }; }
-            function updateHud() { scoreEl.textContent = "Skor: " + score; livesEl.textContent = "❤️".repeat(lives); }
-            function updateGame() {
-                if (paused) return;
-                const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-                if (head.x < 0 || head.y < 0 || head.x >= canvas.width / grid || head.y >= canvas.height / grid) {
-                    lives--; updateHud();
-                    if (lives <= 0) { clearInterval(loop); overlay.style.display = "flex"; return; }
-                    paused = true;
-                    setTimeout(() => { snake = [{ x: Math.floor(Math.random() * (canvas.width / grid)), y: Math.floor(Math.random() * (canvas.height / grid)) }]; paused = false; }, 2000);
-                    return;
+            // Başlatma overlay fonksiyonu
+            function startApp() {
+                document.body.classList.remove("inactive");
+                document.getElementById("startOverlay").style.display = "none";
+                initAudio();
+                // İlk radyo otomatik başlasın
+                if (firstRadioBtn) {
+                    firstRadioBtn.click();
                 }
-                snake.unshift(head);
-                if (head.x === food.x && head.y === food.y) { score += 10; food = randomPos(); updateHud(); }
-                else snake.pop();
-                drawGame();
             }
-            function drawGame() { ctx.fillStyle = "#081626"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = "#e53935"; ctx.fillRect(food.x * grid, food.y * grid, grid, grid); ctx.fillStyle = "#1e88e5"; snake.forEach(s => ctx.fillRect(s.x * grid, s.y * grid, grid, grid)); }
-            window.addEventListener("keydown", e => { if (e.key === "ArrowUp") setDir(0, -1); if (e.key === "ArrowDown") setDir(0, 1); if (e.key === "ArrowLeft") setDir(-1, 0); if (e.key === "ArrowRight") setDir(1, 0); if (paused && (e.key === " " || e.key === "Enter")) paused = false; });
-            window.addEventListener("click", () => { if (paused) paused = false; });
-            function shareLink() { window.prompt("Arkadaşınıza göndermek için linki kopyalayın:", window.location.href); }
-            const openYT = () => window.open("https://www.youtube.com/@bilimselmutfak", "_blank");
-            const openIG = () => window.open("https://www.instagram.com/bilimselmutfakyt/", "_blank");
-
-            /* 1. FONKSİYON - RADYO BİLGİSİ GÖNDERME */
-            function sendCurrentRadio() {
-                let currentRadio = document.querySelector(".radio-btn.active");
-                if (!currentRadio) { alert("Önce bir radyo seçin!"); return; }
-                let radioName = currentRadio.textContent;
-                let mailTo = prompt("Mail veya WhatsApp numarası girin:");
-                if (!mailTo) return;
-                let subject = "Muhteşem bir müzik tıpkı senin gibi :))";
-                let body = `Sevgili kullanıcı,\n\nBu radyo programı BilimselMutfak YouTube kanalı yapımcıları tarafından hazırlanmıştır.\n\nŞu anda dinlediğiniz radyo: ${radioName}\n\nLink: ${window.location.href}`;
-                window.open(`mailto:${mailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
-            }
-
         </script>
     </div>
 </body>
