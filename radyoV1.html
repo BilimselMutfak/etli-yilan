@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>BilimselMutfak RadyoV2</title>
+    <title>BilimselMutfak RadyoV3</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * {
@@ -188,6 +188,7 @@
             .visualizer canvas {
                 width: 100%;
                 height: 100%;
+                display: block;
             }
 
         .control-row {
@@ -305,8 +306,7 @@
 </head>
 <body>
     <div class="app">
-        <header>🎧 BilimselMutfak ROV2</header>
-
+        <header>🎧 BilimselMutfak ROV3</header>
         <div class="mode-bar">
             <div class="mode-btn" onclick="showGame()"><span>🎮</span>Oyun</div>
             <div class="mode-btn" onclick="openYT()"><span>▶️</span>YT</div>
@@ -332,9 +332,7 @@
             <div id="gameArea">
                 <div class="game-wrapper">
                     <div id="gameHud">
-                        <span id="score">Skor: 0</span>
-                        <span>|</span>
-                        <span id="lives">❤️❤️❤️</span>
+                        <span id="score">Skor: 0</span><span>|</span><span id="lives">❤️❤️❤️</span>
                     </div>
                     <canvas id="gameCanvas"></canvas>
                     <div id="gameOverlay">
@@ -349,7 +347,7 @@
             <div class="audio-panel">
                 <div class="visualizer"><canvas id="visCanvas"></canvas></div>
                 <div class="control-row">
-                    <button id="playBtn" class="play-btn" onclick="togglePlay()">▶️</button>
+                    <button id="playBtn" class="play-btn" onclick="togglePlay()">🔇</button>
                     <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)">
                 </div>
             </div>
@@ -383,6 +381,7 @@
             const startOverlay = document.getElementById("startOverlay");
             let audioCtx, analyser, source, data, currentRadioBtn = null;
 
+            // Ses ekolayzırı ve iOS uyumu
             function initAudio() {
                 if (audioCtx) return;
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -401,37 +400,45 @@
                 analyser.getByteFrequencyData(data);
                 vctx.clearRect(0, 0, visCanvas.width, visCanvas.height);
                 const w = visCanvas.width / data.length;
-                data.forEach((v, i) => {
-                    const h = (v / 255) * visCanvas.height;
+                for (let i = 0; i < data.length; i++) {
+                    const h = (data[i] / 255) * visCanvas.height;
                     vctx.fillStyle = "#64b5f6";
                     vctx.fillRect(i * w, visCanvas.height - h, w - 1, h);
-                });
+                }
             }
 
+            // Radyo seçimi ve çalma
             function selectRadio(btn, name, url) {
                 document.querySelectorAll(".radio-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 currentRadioBtn = btn;
                 radio.src = url;
                 initAudio();
-                audioCtx.resume().then(() => radio.play());
+                audioCtx.resume().then(() => radio.play().then(updateIcon));
                 status.textContent = name + " • YAYINDA";
-                updateIcon();
             }
 
+            // Play/Pause ve ikon güncelleme
             function togglePlay() {
-                if (radio.volume === 0) { radio.volume = 0.5; vol.value = 0.5; }
-                if (radio.paused) { audioCtx.resume().then(() => radio.play()); } else { radio.pause(); }
-                updateIcon();
+                if (radio.volume == 0) { radio.volume = 0.5; vol.value = 0.5; }
+                if (radio.paused) { audioCtx.resume().then(() => radio.play().then(updateIcon)); }
+                else { radio.pause(); updateIcon(); }
             }
             function setVolume(v) { radio.volume = v; updateIcon(); }
-            function updateIcon() { playBtn.textContent = radio.paused || radio.volume == 0 ? "🔇" : "⏸️"; }
+            function updateIcon() {
+                if (radio.paused || radio.volume == 0) playBtn.textContent = "🔇";
+                else if (radio.volume < 0.5) playBtn.textContent = "🔈";
+                else playBtn.textContent = "⏸️";
+            }
 
+            // Başlatmak için dokun overlay
             startOverlay.addEventListener("click", () => {
                 startOverlay.classList.add("hidden");
-                // Başlangıç radyosunu seç
                 const firstBtn = document.querySelector("#radioArea .radio-btn");
-                if (firstBtn) selectRadio(firstBtn, firstBtn.textContent, firstBtn.getAttribute("onclick").match(/'(.*?)','(.*?)'/)[2]);
+                if (firstBtn) {
+                    const urlMatch = firstBtn.getAttribute("onclick").match(/'(.*?)','(.*?)'/);
+                    selectRadio(firstBtn, firstBtn.textContent, urlMatch[2]);
+                }
             });
 
             // Oyun ve fonksiyonlar
@@ -446,7 +453,6 @@
             const overlay = document.getElementById("gameOverlay");
             const grid = 20;
             let snake, dir, food, score, lives, loop, paused = false;
-
             function setDir(x, y) { if ((x !== 0 && dir.x === 0) || (y !== 0 && dir.y === 0)) dir = { x, y }; }
             function resizeGame() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
             function showGame() { radioArea.style.display = "none"; gameArea.style.display = "flex"; functionPanel.style.display = "none"; gameControls.style.display = "flex"; resizeGame(); startGame(); }
@@ -462,7 +468,6 @@
             function shareLink() { window.prompt("Arkadaşınıza göndermek için linki kopyalayın:", window.location.href); }
             const openYT = () => window.open("https://www.youtube.com/@bilimselmutfak", "_blank");
             const openIG = () => window.open("https://www.instagram.com/bilimselmutfakyt/", "_blank");
-
             function sendCurrentRadio() {
                 if (!currentRadioBtn) { alert("Önce bir radyo seçin!"); return; }
                 let radioName = currentRadioBtn.textContent;
