@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>BilimselMutfak RadyoV3</title>
+    <title>BilimselMutfak RadyoV1</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -88,15 +88,16 @@
             padding: 16px 16px 8px;
             display: grid;
             grid-template-columns: repeat(2,1fr);
-            gap: 14px;
+            gap: 10px; /* Butonlar arası boşluk biraz azaldı */
         }
 
         .radio-btn {
             background: #132f4c;
-            border-radius: 16px;
-            padding: 14px;
+            border-radius: 14px;
+            padding: 10px;
             text-align: center;
             font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
             transition: .25s;
         }
@@ -120,7 +121,7 @@
             position: relative;
             width: 100%;
             max-width: 360px;
-            height: 360px;
+            height: 320px; /* 360px yerine 320px yaptık */
         }
 
         #gameCanvas {
@@ -168,8 +169,8 @@
                 color: #fff;
                 border: none;
                 border-radius: 12px;
-                padding: 12px 0;
-                font-size: 16px;
+                padding: 10px 0; /* biraz küçültüldü */
+                font-size: 15px;
                 cursor: pointer;
                 width: 150px;
                 transition: .25s;
@@ -193,7 +194,7 @@
 
         .controls {
             background: #0a2540;
-            padding: 12px;
+            padding: 8px; /* padding biraz azaltıldı */
             display: flex;
             justify-content: space-between;
         }
@@ -205,11 +206,11 @@
         .audio-panel {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
         }
-
+        /* gap azaltıldı */
         .visualizer {
-            height: 42px;
+            height: 18px; /* biraz yukarı taşındı */
             background: #102a44;
             border-radius: 12px;
             overflow: hidden;
@@ -223,15 +224,15 @@
 
         .control-row {
             display: flex;
-            gap: 10px;
+            gap: 6px;
         }
-
+        /* aralığı biraz azaltıldı */
         .play-btn {
             background: #1e88e5;
             border: none;
-            border-radius: 14px;
-            padding: 8px 14px;
-            font-size: 16px;
+            border-radius: 12px;
+            padding: 6px 10px; /* küçültüldü */
+            font-size: 14px;
             color: #fff;
             cursor: pointer;
         }
@@ -243,16 +244,16 @@
         .function-panel {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
         }
-
+        /* gap azaltıldı */
         .function-btn {
             background: #132f4c;
             border: none;
-            border-radius: 12px;
-            padding: 12px;
+            border-radius: 10px;
+            padding: 8px; /* küçültüldü */
             color: #90caf9;
-            font-size: 14px;
+            font-size: 13px; /* küçültüldü */
             font-weight: 600;
             cursor: pointer;
         }
@@ -332,6 +333,7 @@
             #startOverlay.hidden {
                 display: none;
             }
+
         #onlineCounter {
             font-size: 12px;
             color: #7dd3fc;
@@ -339,7 +341,12 @@
             align-self: center;
             margin: 0 6px;
             user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
+
         @keyframes onlinePulse {
             0% {
                 transform: scale(1);
@@ -360,25 +367,19 @@
         #onlineCounter.pulse {
             animation: onlinePulse 0.6s ease;
         }
-        #onlineCounter {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
 
         #onlineDot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             display: inline-block;
-            background-color: #ef4444; /* kırmızı */
+            background-color: #ef4444;
             box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
             transition: background-color 0.3s, box-shadow 0.3s;
         }
 
             #onlineDot.online {
-                background-color: #22c55e; /* yeşil */
+                background-color: #22c55e;
                 box-shadow: 0 0 6px rgba(34, 197, 94, 0.9);
             }
 
@@ -386,12 +387,11 @@
                 background-color: #ef4444;
                 box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
             }
-
     </style>
 </head>
 <body>
     <div class="app">
-        <header>🎧 BilimselMutfak ROV3</header>
+        <header>🎧 BilimselMutfak ROV1</header>
         <div class="mode-bar">
             <div class="mode-btn" onclick="showGame()"><span>🎮</span>Oyun</div>
             <div class="mode-btn" onclick="openYT()"><span>▶️</span>YT</div>
@@ -459,9 +459,9 @@
         <audio id="radio" crossorigin="anonymous" playsinline muted></audio>
         <div id="startOverlay"><span>▶️ Başlatmak için dokun</span></div>
 
+        <!-- JS kodları değişmeden kaldı, yukarıda verdiğin tüm fonksiyonlar burada çalışmaya devam edecek -->
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
         <script>
             const radio = document.getElementById("radio");
             const playBtn = document.getElementById("playBtn");
