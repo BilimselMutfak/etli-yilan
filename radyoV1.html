@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>BilimselMutfak RadyoV1</title>
+    <title>BilimselMutfak RadyoV3</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -332,11 +332,66 @@
             #startOverlay.hidden {
                 display: none;
             }
+        #onlineCounter {
+            font-size: 12px;
+            color: #7dd3fc;
+            text-align: center;
+            align-self: center;
+            margin: 0 6px;
+            user-select: none;
+        }
+        @keyframes onlinePulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.08);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.85;
+            }
+        }
+
+        #onlineCounter.pulse {
+            animation: onlinePulse 0.6s ease;
+        }
+        #onlineCounter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        #onlineDot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            background-color: #ef4444; /* kırmızı */
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+            #onlineDot.online {
+                background-color: #22c55e; /* yeşil */
+                box-shadow: 0 0 6px rgba(34, 197, 94, 0.9);
+            }
+
+            #onlineDot.offline {
+                background-color: #ef4444;
+                box-shadow: 0 0 6px rgba(239, 68, 68, 0.8);
+            }
+
     </style>
 </head>
 <body>
     <div class="app">
-        <header>🎧 BilimselMutfak ROV1</header>
+        <header>🎧 BilimselMutfak ROV3</header>
         <div class="mode-bar">
             <div class="mode-btn" onclick="showGame()"><span>🎮</span>Oyun</div>
             <div class="mode-btn" onclick="openYT()"><span>▶️</span>YT</div>
@@ -378,6 +433,10 @@
         <div class="controls">
             <div class="audio-panel">
                 <div class="visualizer"><canvas id="visCanvas"></canvas></div>
+                <div id="onlineCounter">
+                    <span id="onlineDot" class="offline"></span>
+                    <span id="onlineText">Online Kişi: 0</span>
+                </div>
                 <div class="control-row">
                     <button id="playBtn" class="play-btn" onclick="togglePlay()">🔇</button>
                     <input id="vol" type="range" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)">
@@ -399,6 +458,10 @@
         <footer>© BilimselMutfak</footer>
         <audio id="radio" crossorigin="anonymous" playsinline muted></audio>
         <div id="startOverlay"><span>▶️ Başlatmak için dokun</span></div>
+
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
         <script>
             const radio = document.getElementById("radio");
             const playBtn = document.getElementById("playBtn");
@@ -408,6 +471,8 @@
             const vol = document.getElementById("vol");
             const startOverlay = document.getElementById("startOverlay");
             let audioCtx, analyser, source, data, currentRadioBtn = null;
+            let visMode = 0; // 0=Çubuk, 1=Daire, 2=Dalga
+
 
             // Ses ekolayzırı ve iOS uyumu
             function initAudio() {
@@ -495,6 +560,81 @@
             const openYT = () => window.open("https://www.youtube.com/@bilimselmutfak", "_blank");
             const openIG = () => window.open("https://www.instagram.com/bilimselmutfakyt/", "_blank");
             function sendCurrentRadio() { if (!currentRadioBtn) { alert("Önce bir radyo seçin!"); return; } let radioName = currentRadioBtn.textContent; let mailTo = prompt("Mail veya WhatsApp numarası girin:"); if (!mailTo) return; let subject = "Muhteşem bir müzik tıpkı senin gibi :))"; let body = `Sevgili kullanıcı,\n\nBu radyo programı BilimselMutfak YouTube kanalı yapımcıları tarafından hazırlanmıştır.\n\nŞu anda dinlediğiniz radyo: ${radioName}\n\nLink: ${window.location.href}`; window.open(`mailto:${mailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`); }
+            // 🔴 ONLINE KİŞİ SAYACI
+            const firebaseConfig = {
+                apiKey: "AIzaSyBF5HTStOp3Wa_FD3tRT0y_JrSsotLjV6w",
+                authDomain: "bilimselmutfak-radio.firebaseapp.com",
+                projectId: "bilimselmutfak-radio"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const onlineRef = db.collection("radio").doc("online");
+            const onlineDot = document.getElementById("onlineDot");
+            const onlineText = document.getElementById("onlineText");
+            const onlineEl = document.getElementById("onlineCounter");
+            const sessionId = Date.now().toString();
+
+            async function joinRadio() {
+                // Kullanıcıyı ekle
+                await onlineRef.set({
+                    users: firebase.firestore.FieldValue.arrayUnion({ id: sessionId, timestamp: Date.now() })
+                }, { merge: true });
+
+                // 🔹 Heartbeat: 5 saniyede bir timestamp güncelle
+                setInterval(async () => {
+                    const doc = await onlineRef.get();
+                    if (!doc.exists) return;
+                    let users = doc.data().users || [];
+
+                    // Bu kullanıcının timestamp'ini güncelle
+                    users = users.map(u => u.id === sessionId ? { ...u, timestamp: Date.now() } : u);
+
+                    await onlineRef.set({ users }, { merge: true });
+                }, 5000);
+            }
+
+            // 🔴 Hayalet kullanıcı temizleme fonksiyonu
+            async function cleanGhostUsers() {
+                const doc = await onlineRef.get();
+                if (!doc.exists) return;
+
+                let users = doc.data().users || [];
+                const now = Date.now();
+
+                // 15 saniyeden eski kullanıcıları filtrele
+                users = users.filter(u => now - u.timestamp < 15000);
+
+                await onlineRef.set({ users }, { merge: true });
+            }
+
+            async function leaveRadio() {
+                await onlineRef.update({
+                    users: firebase.firestore.FieldValue.arrayRemove(sessionId)
+                });
+            }
+
+            let lastCount = 0;
+
+            onlineRef.onSnapshot(doc => {
+                if (doc.exists && doc.data().users) {
+                    const count = doc.data().users.length;
+
+                    onlineText.textContent = "Online Kişi: " + count;
+
+                    if (count > 0) {
+                        onlineDot.classList.remove("offline");
+                        onlineDot.classList.add("online");
+                    } else {
+                        onlineDot.classList.remove("online");
+                        onlineDot.classList.add("offline");
+                    }
+                }
+            });
+            window.addEventListener("load", joinRadio);
+            // Her 5 saniyede bir hayalet kullanıcıları temizle
+            setInterval(cleanGhostUsers, 5000);
+            window.addEventListener("beforeunload", leaveRadio);
         </script>
     </div>
 </body>
